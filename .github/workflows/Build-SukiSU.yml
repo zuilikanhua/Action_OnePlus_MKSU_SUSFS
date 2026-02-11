@@ -4,7 +4,7 @@ on:
     inputs:
       CPU:
         type: choice
-        description: "分支"
+        description: "分支 (OnePlus 11 选 sm8550)"
         required: true
         default: sm8550
         options:
@@ -18,9 +18,9 @@ on:
           - sm8850
       FEIL:
         type: choice
-        description: "配置文件"
+        description: "配置文件 (OnePlus 11 选 oneplus_11_v)"
         required: true
-        default: oneplus_ace2_pro_v
+        default: oneplus_11_v
         options:
           - oneplus_nord_ce4_v
           - oneplus_ace_3v_v
@@ -46,10 +46,9 @@ on:
           - oneplus_pad_2_pro
           - oneplus_pad_3
           - oneplus_15
-          - GitHub有bug可能不显示最后一项,误使用此项
       CPUD:
         type: choice
-        description: "处理器代号"
+        description: "处理器代号 (OnePlus 11 选 kalama)"
         required: true
         default: kalama
         options:
@@ -63,7 +62,7 @@ on:
         type: choice
         description: "内核安卓版本"
         required: true
-        default: android15
+        default: android14
         options:
           - android12
           - android13
@@ -71,16 +70,16 @@ on:
           - android15
           - android16
       KERNEL_VERSION:
-       type: choice
-       description: "内核版本"
-       required: true
-       default: "5.15"
-       options:
-         - "5.10"
-         - "5.15"
-         - "6.1"
-         - "6.6"
-         - "6.12"
+        type: choice
+        description: "内核版本"
+        required: true
+        default: "5.15"
+        options:
+          - "5.10"
+          - "5.15"
+          - "6.1"
+          - "6.6"
+          - "6.12"
       BUILD_METHOD:
         type: choice
         description: "编译方式"
@@ -160,10 +159,10 @@ jobs:
           mkdir kernel_workspace && cd kernel_workspace
           repo init -u https://github.com/OnePlusOSS/kernel_manifest.git -b refs/heads/oneplus/${{ github.event.inputs.CPU }} -m ${{ github.event.inputs.FEIL }}.xml --depth=1
           repo sync
-          if [  -e kernel_platform/common/BUILD.bazel ]; then
+          if [ -e kernel_platform/common/BUILD.bazel ]; then
           sed -i '/^[[:space:]]*"protected_exports_list"[[:space:]]*:[[:space:]]*"android\/abi_gki_protected_exports_aarch64",$/d' kernel_platform/common/BUILD.bazel
           fi
-          if [  -e kernel_platform/msm-kernel/BUILD.bazel ]; then
+          if [ -e kernel_platform/msm-kernel/BUILD.bazel ]; then
           sed -i '/^[[:space:]]*"protected_exports_list"[[:space:]]*:[[:space:]]*"android\/abi_gki_protected_exports_aarch64",$/d' kernel_platform/msm-kernel/BUILD.bazel
           fi
           rm kernel_platform/common/android/abi_gki_protected_exports_* || echo "No protected exports!"
@@ -289,16 +288,16 @@ jobs:
             fi
 
             if [ "${{ github.event.inputs.ANDROID_VERSION }}" = "android14" ] || [ "${{ github.event.inputs.ANDROID_VERSION }}" = "android15" ] || [ "${{ github.event.inputs.ANDROID_VERSION }}" = "android16" ]; then
-              if [  -e ./common/modules.bzl ]; then
+              if [ -e ./common/modules.bzl ]; then
                 sed -i 's/"drivers\/block\/zram\/zram\.ko",//g; s/"mm\/zsmalloc\.ko",//g' "./common/modules.bzl"
               fi
 
-              if [  -e ./msm-kernel/modules.bzl ]; then
+              if [ -e ./msm-kernel/modules.bzl ]; then
                 sed -i 's/"drivers\/block\/zram\/zram\.ko",//g; s/"mm\/zsmalloc\.ko",//g' "./msm-kernel/modules.bzl"
                 echo "CONFIG_ZSMALLOC=y" >> "msm-kernel/arch/arm64/configs/${{ github.event.inputs.CPUD }}-GKI.config"
                 echo "CONFIG_ZRAM=y" >> "msm-kernel/arch/arm64/configs/${{ github.event.inputs.CPUD }}-GKI.config"
               fi
-              
+               
               echo "CONFIG_MODULE_SIG_FORCE=n" >> "$CONFIG_FILE"
             elif [ "${{ github.event.inputs.KERNEL_VERSION }}" = "5.10" ] || [ "${{ github.event.inputs.KERNEL_VERSION }}" = "5.15" ]; then
               rm "common/android/gki_aarch64_modules"
